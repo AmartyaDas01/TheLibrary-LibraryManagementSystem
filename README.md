@@ -1,7 +1,7 @@
 # TheLibrary-LibraryManagementSystem
 
 
-This is my Final Internship Project For BEWD at TCR Innovations. Here, I have created a simple Library Management System by the name of 'The Library' using HTML, CSS and Django.
+This is my Final Internship Project For BEWD at TCR Innovations. Here, I have created a simple Library Management System by the name of 'The Library' using HTML, CSS, Bootstrap and Django.
 
 Before starting run in terminal:
 py manage.py makemigrations
