@@ -1,7 +1,7 @@
 # TheLibrary-LibraryManagementSystem
 
 
-Library Management System using Django.
+This is my Final Internship Project For BEWD at TCR Innovations. Here, I have created a simple Library Management System by the name of 'The Library' using HTML, CSS and Django.
 
 Before starting run in terminal:
 py manage.py makemigrations
