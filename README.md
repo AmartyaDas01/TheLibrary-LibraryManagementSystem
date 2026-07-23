@@ -1,17 +1,79 @@
-# TheLibrary-LibraryManagementSystem
+# The Library
 
+A library management system with two sides to it: a public catalogue where members
+browse, borrow and reserve books, and a staff desk where librarians handle circulation,
+fines, reservations and the collection itself.
 
-This is my Final Internship Project for BEWD at TCR Innovation. Here, I have created a simple Library Management System by the name of 'The Library' using HTML, CSS, Bootstrap and Django.
+Built with the Next.js App Router, Prisma over SQLite, and Tailwind. Book covers are
+generated from a stored hue rather than uploaded, so the whole thing runs from a single
+seed with no external assets.
 
-Before starting run in terminal:
-py manage.py makemigrations
-py manage.py migrate
-py manage.py runserver
+## Features
 
-For The Library Admin Panel:
-Username: amartyadas
-Password: amartya123
+**For members**
+- Browse and search the catalogue by title, author or ISBN, filter by subject, and see
+  what's on the shelf right now
+- Borrow available books (up to five at a time, due back in 14 days)
+- Reserve a title that's out and join the waiting list
+- A personal shelf showing current loans, due dates, reservations, fines and reading history
 
-For Django Admin Panel:
-Username: adminlib
-Password: tcrproject
+**For staff**
+- A dashboard with the day's numbers: titles, active loans, overdue books, reservations
+  and uncollected fines
+- Issue and return books from the circulation desk
+- Overdue fines calculated automatically on return (₹2 per day) and marked paid when settled
+- Add, edit and remove catalogue records, with copy counts kept in step with what's on loan
+- A members list and a live reservation queue
+
+## Tech stack
+
+- **Next.js 16** (App Router, Server Components, Server Actions)
+- **Prisma 7** with a better-sqlite3 driver adapter
+- **Tailwind CSS v4** with a warm, print-inspired theme and full light/dark support
+- **TypeScript** throughout
+- Cookie-based sessions signed with HMAC; passwords hashed with bcrypt
+
+## Getting started
+
+```bash
+npm install          # also generates the Prisma client
+npm run db:migrate    # create the SQLite database
+npm run db:seed       # load the demo catalogue and accounts
+npm run dev
+```
+
+Then open [http://localhost:3000](http://localhost:3000).
+
+### Demo accounts
+
+| Role      | Email                      | Password      |
+| --------- | -------------------------- | ------------- |
+| Librarian | librarian@thelibrary.app   | librarian123  |
+| Member    | arjun@example.com          | member123     |
+
+New members can also sign up from the join page.
+
+## Scripts
+
+| Command            | What it does                                  |
+| ------------------ | --------------------------------------------- |
+| `npm run dev`      | Start the dev server                          |
+| `npm run build`    | Generate the Prisma client and build for prod |
+| `npm run db:seed`  | Seed the database with demo data              |
+| `npm run db:reset` | Drop, re-migrate and re-seed the database     |
+
+## Project layout
+
+```
+prisma/            schema, migrations and the seed script
+src/app/(site)/    public pages: home, catalogue, book detail, account, auth
+src/app/admin/     staff area: dashboard, circulation, catalogue, members
+src/lib/           db client, auth, data queries and server actions
+src/components/    UI primitives and feature components
+```
+
+## Notes
+
+The database uses a `SESSION_SECRET` environment variable to sign session cookies; a
+development fallback is used if it isn't set. Set a real one before deploying anywhere
+public.

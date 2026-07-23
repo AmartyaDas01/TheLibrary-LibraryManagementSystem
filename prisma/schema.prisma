@@ -1,0 +1,92 @@
+// The Library — data model
+// SQLite has no native enums, so status/role fields are plain strings
+// validated in application code (see src/lib/constants.ts).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String   @default("MEMBER") // MEMBER | LIBRARIAN
+  membershipId String   @unique
+  createdAt    DateTime @default(now())
+
+  loans        Loan[]
+  reservations Reservation[]
+  fines        Fine[]
+}
+
+model Book {
+  id              String   @id @default(cuid())
+  title           String
+  author          String
+  isbn            String   @unique
+  category        String
+  description     String
+  publisher       String?
+  publishedYear   Int?
+  pageCount       Int?
+  coverHue        Int      @default(150) // 0-360, drives the generated spine/cover
+  totalCopies     Int      @default(1)
+  availableCopies Int      @default(1)
+  createdAt       DateTime @default(now())
+
+  loans        Loan[]
+  reservations Reservation[]
+
+  @@index([category])
+  @@index([title])
+}
+
+model Loan {
+  id         String    @id @default(cuid())
+  book       Book      @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  bookId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  borrowedAt DateTime  @default(now())
+  dueAt      DateTime
+  returnedAt DateTime?
+  status     String    @default("ACTIVE") // ACTIVE | RETURNED
+
+  fine       Fine?
+
+  @@index([userId])
+  @@index([bookId])
+  @@index([status])
+}
+
+model Reservation {
+  id         String   @id @default(cuid())
+  book       Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  bookId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  reservedAt DateTime @default(now())
+  status     String   @default("PENDING") // PENDING | FULFILLED | CANCELLED
+
+  @@index([userId])
+  @@index([bookId])
+}
+
+model Fine {
+  id        String   @id @default(cuid())
+  loan      Loan     @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  loanId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  amount    Int // stored in the smallest currency unit (paise)
+  paid      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
