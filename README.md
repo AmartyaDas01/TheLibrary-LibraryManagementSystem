@@ -36,7 +36,8 @@ seed with no external assets.
 ## Getting started
 
 ```bash
-npm install          # also generates the Prisma client
+cp .env.example .env  # then set SESSION_SECRET
+npm install           # also generates the Prisma client
 npm run db:migrate    # create the SQLite database
 npm run db:seed       # load the demo catalogue and accounts
 npm run dev
@@ -72,8 +73,21 @@ src/lib/           db client, auth, data queries and server actions
 src/components/    UI primitives and feature components
 ```
 
+## Deploying
+
+Set two environment variables in your host:
+
+- `SESSION_SECRET` — used to sign session cookies. Generate one with `openssl rand -hex 32`.
+  A development fallback is used if it isn't set, so a real value matters before going public.
+- `DATABASE_URL` — the SQLite connection string. Note that SQLite lives on the local
+  filesystem, which is fine for a single instance or a persistent disk. On platforms with
+  an ephemeral or read-only filesystem, point this at a hosted database (for example a
+  Postgres or libSQL/Turso provider) and switch the Prisma datasource accordingly.
+
+Run `npm run build`, which generates the Prisma client and builds the app, then `npm run start`.
+
 ## Notes
 
-The database uses a `SESSION_SECRET` environment variable to sign session cookies; a
-development fallback is used if it isn't set. Set a real one before deploying anywhere
-public.
+- `.env.example` lists the environment variables; copy it to `.env` to get going.
+- The seed script (`npm run db:seed`) resets the tables before loading, so it's safe to
+  re-run whenever you want the demo data back.
