@@ -8,6 +8,9 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { initials } from "@/lib/utils";
 
+// The staff area is authenticated and data-driven; render per request.
+export const dynamic = "force-dynamic";
+
 export default async function AdminLayout({
   children,
 }: {

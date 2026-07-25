@@ -1,6 +1,6 @@
 // The Library — data model
-// SQLite has no native enums, so status/role fields are plain strings
-// validated in application code (see src/lib/constants.ts).
+// Status/role fields are kept as plain strings validated in application code
+// (see src/lib/constants.ts) rather than database enums.
 
 generator client {
   provider = "prisma-client"
@@ -8,7 +8,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 model User {

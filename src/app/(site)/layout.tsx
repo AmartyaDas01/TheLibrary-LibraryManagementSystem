@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
 
+// These pages read the session cookie and live catalogue data, so they are
+// rendered per request rather than prerendered at build time.
+export const dynamic = "force-dynamic";
+
 export default function SiteLayout({
   children,
 }: {

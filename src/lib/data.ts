@@ -28,9 +28,9 @@ export async function getBooks(filters: CatalogFilters = {}) {
       ...(query
         ? {
             OR: [
-              { title: { contains: query } },
-              { author: { contains: query } },
-              { isbn: { contains: query } },
+              { title: { contains: query, mode: "insensitive" as const } },
+              { author: { contains: query, mode: "insensitive" as const } },
+              { isbn: { contains: query, mode: "insensitive" as const } },
             ],
           }
         : {}),
