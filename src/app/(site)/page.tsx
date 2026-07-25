@@ -33,9 +33,9 @@ export default async function HomePage() {
               Every reader deserves the right book.
             </h1>
             <p className="mt-6 max-w-xl font-prose text-lg leading-relaxed text-muted-foreground">
-              Browse the collection, borrow with a tap, and keep track of what's
-              due — all in one quiet, well-kept place. The Library brings the
-              reading room and the circulation desk together.
+              Find a book, borrow it in a tap, and see what you owe and when it's
+              due. The Library puts the reading room and the front desk on the
+              same screen.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild size="lg">
@@ -164,7 +164,7 @@ export default async function HomePage() {
           <HowStep
             icon={<CalendarClock className="size-5" />}
             title="Keep track"
-            body="Your shelf shows what you have, when it's due, and any fines — no more guessing at the desk."
+            body="Your shelf shows what you're holding, when each book is due, and any fines you owe, so nothing's a surprise at the desk."
           />
         </div>
 
@@ -176,7 +176,7 @@ export default async function HomePage() {
               </span>
               <div>
                 <h3 className="font-serif text-2xl font-semibold">
-                  Run the desk with confidence
+                  Everything the front desk needs
                 </h3>
                 <p className="mt-1 max-w-lg text-on-primary/80">
                   Staff manage the catalogue, issue and return books, and track

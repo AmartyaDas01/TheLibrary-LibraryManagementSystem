@@ -114,7 +114,7 @@ export default async function AdminBooksPage({
                             className="text-destructive hover:bg-destructive/10"
                             title={
                               onLoan > 0
-                                ? "Copies are on loan — cannot delete"
+                                ? "Can't delete while copies are on loan"
                                 : "Delete book"
                             }
                             disabled={onLoan > 0}

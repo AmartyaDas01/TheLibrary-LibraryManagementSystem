@@ -88,7 +88,7 @@ export default async function CirculationPage({
                 </option>
                 {availableBooks.map((b) => (
                   <option key={b.id} value={b.id}>
-                    {b.title} — {b.availableCopies} left
+                    {b.title} ({b.availableCopies} left)
                   </option>
                 ))}
               </Select>

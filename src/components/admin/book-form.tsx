@@ -210,7 +210,8 @@ export function BookForm({ initial }: { initial?: Partial<BookValues> }) {
             }}
           />
           <p className="mt-1.5 text-xs text-muted-foreground">
-            Covers are generated from this hue — no image upload needed.
+            Covers are generated from this colour, so there's no image to
+            upload.
           </p>
         </div>
       </aside>

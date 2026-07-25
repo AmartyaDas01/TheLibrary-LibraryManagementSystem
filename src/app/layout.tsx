@@ -24,11 +24,11 @@ const crimson = Crimson_Pro({
 
 export const metadata: Metadata = {
   title: {
-    default: "The Library — Borrow, reserve and manage your collection",
+    default: "The Library · Borrow and reserve books",
     template: "%s · The Library",
   },
   description:
-    "A modern library management system: browse the catalogue, borrow and reserve books as a member, and run circulation, members and fines from the staff desk.",
+    "A library management system with two sides. Members browse the catalogue and borrow or reserve books. Staff handle circulation, members and fines from the desk.",
 };
 
 // Set the theme before first paint to avoid a flash of the wrong colour scheme.

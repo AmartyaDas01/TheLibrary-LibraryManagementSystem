@@ -33,9 +33,9 @@ export default async function LoginPage() {
       <div className="mt-8 rounded border border-dashed border-border bg-muted/40 p-4 text-xs text-muted-foreground">
         <p className="font-medium text-foreground">Demo accounts</p>
         <p className="mt-1.5">
-          Staff — librarian@thelibrary.app · librarian123
+          Staff: librarian@thelibrary.app · librarian123
         </p>
-        <p>Member — arjun@example.com · member123</p>
+        <p>Member: arjun@example.com · member123</p>
       </div>
     </div>
   );

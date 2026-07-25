@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
 /**
- * A procedurally generated book cover — no external image assets.
+ * A procedurally generated book cover that needs no external image assets.
  * The hue (stored per book) drives a consistent cloth-and-foil colour scheme,
  * so every title looks distinct while staying on-brand.
  */

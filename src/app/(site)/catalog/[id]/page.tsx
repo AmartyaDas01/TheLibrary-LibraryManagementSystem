@@ -151,7 +151,7 @@ export default async function BookPage({
               <form action={reserveAction}>
                 <input type="hidden" name="bookId" value={book.id} />
                 <SubmitButton variant="accent" size="lg" pendingText="Reserving…">
-                  Reserve — join the waiting list
+                  Reserve and join the waiting list
                 </SubmitButton>
                 <p className="mt-2 text-xs text-muted-foreground">
                   We'll set this copy aside for you when it's returned.
