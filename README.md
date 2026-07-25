@@ -1,45 +1,55 @@
 # The Library
 
-A library management system with two sides to it: a public catalogue where members
-browse, borrow and reserve books, and a staff desk where librarians handle circulation,
-fines, reservations and the collection itself.
+A library management system with two sides to it. Members get a public catalogue to
+browse, borrow and reserve books. Librarians get a staff desk for circulation, fines,
+reservations and the collection itself.
 
-Built with the Next.js App Router, Prisma over SQLite, and Tailwind. Book covers are
-generated from a stored hue rather than uploaded, so the whole thing runs from a single
-seed with no external assets.
+Live demo: https://library-management-system-omega-rosy.vercel.app
+
+Built with the Next.js App Router, Prisma on Postgres, and Tailwind. Book covers are
+generated from a stored colour value instead of uploaded images, so the whole app runs
+from a single seed with no external assets.
+
+> The demo runs on a free database that sleeps when idle, so the first request after a
+> while can take a few seconds to wake up.
 
 ## Features
 
-**For members**
-- Browse and search the catalogue by title, author or ISBN, filter by subject, and see
-  what's on the shelf right now
+For members:
+
+- Search the catalogue by title, author or ISBN, filter by subject, and see what's on
+  the shelf right now
 - Borrow available books (up to five at a time, due back in 14 days)
 - Reserve a title that's out and join the waiting list
-- A personal shelf showing current loans, due dates, reservations, fines and reading history
+- A personal shelf with current loans, due dates, reservations, fines and past borrows
 
-**For staff**
+For staff:
+
 - A dashboard with the day's numbers: titles, active loans, overdue books, reservations
-  and uncollected fines
+  and unpaid fines
 - Issue and return books from the circulation desk
-- Overdue fines calculated automatically on return (₹2 per day) and marked paid when settled
+- Overdue fines worked out automatically on return (₹2 per day) and marked paid once settled
 - Add, edit and remove catalogue records, with copy counts kept in step with what's on loan
 - A members list and a live reservation queue
 
 ## Tech stack
 
-- **Next.js 16** (App Router, Server Components, Server Actions)
-- **Prisma 7** with a better-sqlite3 driver adapter
-- **Tailwind CSS v4** with a warm, print-inspired theme and full light/dark support
-- **TypeScript** throughout
-- Cookie-based sessions signed with HMAC; passwords hashed with bcrypt
+- Next.js 16 (App Router, Server Components, Server Actions)
+- Prisma 7 with the `pg` driver adapter, talking to Postgres
+- Tailwind CSS v4 with a warm, print-inspired theme and light and dark modes
+- TypeScript throughout
+- Cookie sessions signed with HMAC, passwords hashed with bcrypt
 
 ## Getting started
 
+You'll need a Postgres database. A free [Neon](https://neon.tech) project works well, or
+run Postgres locally.
+
 ```bash
-cp .env.example .env  # then set SESSION_SECRET
-npm install           # also generates the Prisma client
-npm run db:migrate    # create the SQLite database
-npm run db:seed       # load the demo catalogue and accounts
+cp .env.example .env   # set DATABASE_URL and SESSION_SECRET
+npm install            # also generates the Prisma client
+npm run db:push        # create the tables
+npm run db:seed        # load the demo catalogue and accounts
 npm run dev
 ```
 
@@ -47,26 +57,27 @@ Then open [http://localhost:3000](http://localhost:3000).
 
 ### Demo accounts
 
-| Role      | Email                      | Password      |
-| --------- | -------------------------- | ------------- |
-| Librarian | librarian@thelibrary.app   | librarian123  |
-| Member    | arjun@example.com          | member123     |
+| Role      | Email                    | Password     |
+| --------- | ------------------------ | ------------ |
+| Librarian | librarian@thelibrary.app | librarian123 |
+| Member    | arjun@example.com        | member123    |
 
-New members can also sign up from the join page.
+Anyone can also sign up for a member account from the join page.
 
 ## Scripts
 
-| Command            | What it does                                  |
-| ------------------ | --------------------------------------------- |
-| `npm run dev`      | Start the dev server                          |
-| `npm run build`    | Generate the Prisma client and build for prod |
-| `npm run db:seed`  | Seed the database with demo data              |
-| `npm run db:reset` | Drop, re-migrate and re-seed the database     |
+| Command            | What it does                              |
+| ------------------ | ----------------------------------------- |
+| `npm run dev`      | Start the dev server                      |
+| `npm run build`    | Generate the Prisma client and build      |
+| `npm run db:push`  | Sync the schema to the database           |
+| `npm run db:seed`  | Load demo data (resets the tables first)  |
+| `npm run db:reset` | Wipe, recreate and reseed the database    |
 
 ## Project layout
 
 ```
-prisma/            schema, migrations and the seed script
+prisma/            schema and the seed script
 src/app/(site)/    public pages: home, catalogue, book detail, account, auth
 src/app/admin/     staff area: dashboard, circulation, catalogue, members
 src/lib/           db client, auth, data queries and server actions
@@ -75,19 +86,26 @@ src/components/    UI primitives and feature components
 
 ## Deploying
 
-Set two environment variables in your host:
+The app is set up for Vercel with a Postgres database (the demo uses Neon). Set these
+environment variables on the project:
 
-- `SESSION_SECRET` — used to sign session cookies. Generate one with `openssl rand -hex 32`.
-  A development fallback is used if it isn't set, so a real value matters before going public.
-- `DATABASE_URL` — the SQLite connection string. Note that SQLite lives on the local
-  filesystem, which is fine for a single instance or a persistent disk. On platforms with
-  an ephemeral or read-only filesystem, point this at a hosted database (for example a
-  Postgres or libSQL/Turso provider) and switch the Prisma datasource accordingly.
+- `DATABASE_URL` is the Postgres connection string. Use the pooled one for the app at
+  runtime.
+- `SESSION_SECRET` signs the session cookies. Generate one with `openssl rand -hex 32`.
+  There's a development fallback, so set a real value before going public.
 
-Run `npm run build`, which generates the Prisma client and builds the app, then `npm run start`.
+Two things worth knowing if you deploy elsewhere:
+
+- Neon connection strings include `channel_binding=require`, which the `pg` driver can't
+  negotiate and will hang on. `src/lib/db.ts` strips that parameter at runtime, so leave
+  it in place.
+- The catalogue and account pages read live data and the session cookie, so they render
+  per request. That's why the build never needs a database connection.
+
+Run `npm run db:push` once against your database to create the tables, then deploy.
 
 ## Notes
 
-- `.env.example` lists the environment variables; copy it to `.env` to get going.
-- The seed script (`npm run db:seed`) resets the tables before loading, so it's safe to
-  re-run whenever you want the demo data back.
+`.env.example` lists the environment variables. Copy it to `.env` to get going. The seed
+script clears the tables before loading, so you can re-run it whenever you want the demo
+data back.
