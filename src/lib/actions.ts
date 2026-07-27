@@ -12,6 +12,7 @@ import {
   verifyPassword,
 } from "@/lib/auth";
 import { accruedFine, getMemberActiveLoanCount } from "@/lib/data";
+import { getStripe, getOrigin } from "@/lib/stripe";
 import {
   LOAN_PERIOD_DAYS,
   LOAN_STATUS,
@@ -150,6 +151,54 @@ export async function payFineAction(formData: FormData): Promise<void> {
     data: { paid: true },
   });
   revalidatePath("/account");
+}
+
+/**
+ * Sends the member to Stripe Checkout (test mode) to pay a fine. When no Stripe
+ * key is configured the fine is simply marked paid, so the demo still works.
+ */
+export async function startFineCheckout(formData: FormData): Promise<void> {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+  const id = String(formData.get("fineId") ?? "");
+
+  const fine = await prisma.fine.findFirst({
+    where: { id, userId: user.id, paid: false },
+    include: { loan: { include: { book: true } } },
+  });
+  if (!fine) redirect("/account");
+
+  const stripe = getStripe();
+  if (!stripe) {
+    // No payment provider configured: settle it directly.
+    await prisma.fine.update({ where: { id: fine.id }, data: { paid: true } });
+    revalidatePath("/account");
+    redirect("/account?paid=1");
+  }
+
+  const origin = await getOrigin();
+  const session = await stripe.checkout.sessions.create({
+    mode: "payment",
+    line_items: [
+      {
+        price_data: {
+          currency: "inr",
+          product_data: {
+            name: `Library fine: ${fine.loan.book.title}`,
+            description: `Overdue fine for ${user.name} (${user.membershipId})`,
+          },
+          unit_amount: fine.amount, // already in paise
+        },
+        quantity: 1,
+      },
+    ],
+    metadata: { fineId: fine.id, userId: user.id },
+    success_url: `${origin}/account/fines/return?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${origin}/account?payment=cancelled`,
+  });
+
+  if (!session.url) throw new Error("Could not start the payment session.");
+  redirect(session.url);
 }
 
 // ── Shared circulation logic ────────────────────────────────────────────
