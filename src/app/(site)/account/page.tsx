@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import {
   BookMarked,
-  CheckCircle2,
   Clock,
   History,
   IndianRupee,
@@ -12,7 +11,8 @@ import {
 } from "lucide-react";
 import { getCurrentUser, isLibrarian } from "@/lib/auth";
 import { getMemberOverview, accruedFine } from "@/lib/data";
-import { cancelReservationAction, startFineCheckout } from "@/lib/actions";
+import { cancelReservationAction } from "@/lib/actions";
+import { PayFineButton } from "@/components/pay-fine-button";
 import { BookCover } from "@/components/book-cover";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,16 +22,11 @@ import { formatCurrency, formatDate, relativeDays, daysUntil } from "@/lib/utils
 
 export const metadata: Metadata = { title: "My shelf" };
 
-export default async function AccountPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ paid?: string; payment?: string }>;
-}) {
+export default async function AccountPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   if (isLibrarian(user)) redirect("/admin");
 
-  const sp = await searchParams;
   const { activeLoans, reservations, fines, history, unpaidFines } =
     await getMemberOverview(user.id);
   const overdueCount = activeLoans.filter(
@@ -40,22 +35,6 @@ export default async function AccountPage({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-      {sp.paid === "1" && (
-        <p className="mb-6 flex items-center gap-2 rounded border border-success/30 bg-[color-mix(in_oklab,var(--success)_12%,transparent)] px-3.5 py-2.5 text-sm font-medium text-success">
-          <CheckCircle2 className="size-4" />
-          Payment received. Your fine has been settled.
-        </p>
-      )}
-      {sp.payment === "cancelled" && (
-        <p className="mb-6 rounded border border-border bg-muted/50 px-3.5 py-2.5 text-sm text-muted-foreground">
-          Payment cancelled. No charge was made.
-        </p>
-      )}
-      {sp.payment === "failed" && (
-        <p className="mb-6 rounded border border-destructive/30 bg-destructive/10 px-3.5 py-2.5 text-sm font-medium text-destructive">
-          We couldn't confirm that payment. Please try again.
-        </p>
-      )}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-sm text-muted-foreground">
@@ -291,16 +270,7 @@ export default async function AccountPage({
                         {f.paid ? (
                           <Badge tone="success">Paid</Badge>
                         ) : (
-                          <form action={startFineCheckout}>
-                            <input type="hidden" name="fineId" value={f.id} />
-                            <SubmitButton
-                              size="sm"
-                              variant="accent"
-                              pendingText="Redirecting…"
-                            >
-                              Pay with card
-                            </SubmitButton>
-                          </form>
+                          <PayFineButton fineId={f.id} />
                         )}
                       </div>
                     </li>
@@ -310,8 +280,8 @@ export default async function AccountPage({
             )}
             {unpaidFines > 0 && (
               <p className="mt-2 text-xs text-muted-foreground">
-                Test mode: pay with card 4242 4242 4242 4242, any future expiry
-                and any CVC.
+                Test mode: pay with card 4111 1111 1111 1111, any future expiry
+                and CVV, or UPI id success@razorpay.
               </p>
             )}
           </section>

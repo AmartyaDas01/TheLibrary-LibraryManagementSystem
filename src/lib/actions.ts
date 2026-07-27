@@ -12,7 +12,12 @@ import {
   verifyPassword,
 } from "@/lib/auth";
 import { accruedFine, getMemberActiveLoanCount } from "@/lib/data";
-import { getStripe, getOrigin } from "@/lib/stripe";
+import {
+  createOrder,
+  isRazorpayConfigured,
+  razorpayKeyId,
+  verifySignature,
+} from "@/lib/razorpay";
 import {
   LOAN_PERIOD_DAYS,
   LOAN_STATUS,
@@ -153,52 +158,76 @@ export async function payFineAction(formData: FormData): Promise<void> {
   revalidatePath("/account");
 }
 
+export type FineOrder =
+  | { status: "settled" }
+  | {
+      status: "ready";
+      orderId: string;
+      amount: number;
+      currency: string;
+      keyId: string;
+      name: string;
+      description: string;
+      prefill: { name: string; email: string };
+    }
+  | { status: "error"; message: string };
+
 /**
- * Sends the member to Stripe Checkout (test mode) to pay a fine. When no Stripe
- * key is configured the fine is simply marked paid, so the demo still works.
+ * Opens a Razorpay order (test mode) for a member's fine. When no Razorpay key
+ * is configured the fine is settled directly, so the demo still works.
  */
-export async function startFineCheckout(formData: FormData): Promise<void> {
+export async function createFineOrder(fineId: string): Promise<FineOrder> {
   const user = await getCurrentUser();
-  if (!user) redirect("/login");
-  const id = String(formData.get("fineId") ?? "");
+  if (!user) return { status: "error", message: "Please sign in again." };
 
   const fine = await prisma.fine.findFirst({
-    where: { id, userId: user.id, paid: false },
+    where: { id: fineId, userId: user.id, paid: false },
     include: { loan: { include: { book: true } } },
   });
-  if (!fine) redirect("/account");
+  if (!fine) return { status: "error", message: "Fine not found." };
 
-  const stripe = getStripe();
-  if (!stripe) {
-    // No payment provider configured: settle it directly.
+  if (!isRazorpayConfigured()) {
     await prisma.fine.update({ where: { id: fine.id }, data: { paid: true } });
     revalidatePath("/account");
-    redirect("/account?paid=1");
+    return { status: "settled" };
   }
 
-  const origin = await getOrigin();
-  const session = await stripe.checkout.sessions.create({
-    mode: "payment",
-    line_items: [
-      {
-        price_data: {
-          currency: "inr",
-          product_data: {
-            name: `Library fine: ${fine.loan.book.title}`,
-            description: `Overdue fine for ${user.name} (${user.membershipId})`,
-          },
-          unit_amount: fine.amount, // already in paise
-        },
-        quantity: 1,
-      },
-    ],
-    metadata: { fineId: fine.id, userId: user.id },
-    success_url: `${origin}/account/fines/return?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/account?payment=cancelled`,
+  const order = await createOrder({
+    amount: fine.amount, // already in paise
+    receipt: `fine_${fine.id}`.slice(0, 40),
+    notes: { fineId: fine.id, userId: user.id },
   });
 
-  if (!session.url) throw new Error("Could not start the payment session.");
-  redirect(session.url);
+  return {
+    status: "ready",
+    orderId: order.id,
+    amount: order.amount,
+    currency: order.currency,
+    keyId: razorpayKeyId(),
+    name: "The Library",
+    description: `Fine for ${fine.loan.book.title}`,
+    prefill: { name: user.name, email: user.email },
+  };
+}
+
+/** Verifies a Razorpay payment and marks the fine settled. */
+export async function settleFinePayment(input: {
+  fineId: string;
+  orderId: string;
+  paymentId: string;
+  signature: string;
+}): Promise<{ ok: boolean }> {
+  const user = await getCurrentUser();
+  if (!user) return { ok: false };
+  if (!verifySignature(input.orderId, input.paymentId, input.signature)) {
+    return { ok: false };
+  }
+  await prisma.fine.updateMany({
+    where: { id: input.fineId, userId: user.id },
+    data: { paid: true },
+  });
+  revalidatePath("/account");
+  return { ok: true };
 }
 
 // ── Shared circulation logic ────────────────────────────────────────────
