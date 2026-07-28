@@ -394,7 +394,7 @@ async function main() {
   await lend(createdBooks[4]!.id, members[1]!.id, now - 20 * day, now - 6 * day);
   // Another active loan due soon.
   await lend(createdBooks[13]!.id, members[2]!.id, now - 12 * day, now + 2 * day);
-  // A returned loan that came back late — leaves a paid fine on record.
+  // A returned loan that came back late, leaving a paid fine on record.
   const late = await lend(
     createdBooks[3]!.id,
     members[0]!.id,
@@ -415,6 +415,31 @@ async function main() {
       userId: members[0]!.id,
       amount: 4 * 200,
       paid: true,
+    },
+  });
+
+  // Another late return, this one still unpaid, so the "Pay" flow has
+  // something to settle in the demo.
+  const unpaidLate = await lend(
+    createdBooks[5]!.id,
+    members[0]!.id,
+    now - 24 * day,
+    now - 10 * day,
+  );
+  await prisma.loan.update({
+    where: { id: unpaidLate.id },
+    data: { status: "RETURNED", returnedAt: new Date(now - 3 * day) },
+  });
+  await prisma.book.update({
+    where: { id: createdBooks[5]!.id },
+    data: { availableCopies: { increment: 1 } },
+  });
+  await prisma.fine.create({
+    data: {
+      loanId: unpaidLate.id,
+      userId: members[0]!.id,
+      amount: 7 * 200,
+      paid: false,
     },
   });
 
