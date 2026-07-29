@@ -7,6 +7,7 @@ import {
   History,
   IndianRupee,
   ListChecks,
+  Receipt,
   TriangleAlert,
 } from "lucide-react";
 import { getCurrentUser, isLibrarian } from "@/lib/auth";
@@ -32,6 +33,8 @@ export default async function AccountPage() {
   const overdueCount = activeLoans.filter(
     (l) => daysUntil(l.dueAt) < 0,
   ).length;
+  const outstandingFines = fines.filter((f) => !f.paid);
+  const paidFines = fines.filter((f) => f.paid);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
@@ -245,12 +248,12 @@ export default async function AccountPage() {
             <SectionTitle icon={<IndianRupee className="size-5" />}>
               Fines
             </SectionTitle>
-            {fines.length === 0 ? (
-              <EmptyCard>No fines on record. Nicely done.</EmptyCard>
+            {outstandingFines.length === 0 ? (
+              <EmptyCard>No outstanding fines. Nicely done.</EmptyCard>
             ) : (
               <Card className="mt-4">
                 <ul className="divide-y divide-border">
-                  {fines.map((f) => (
+                  {outstandingFines.map((f) => (
                     <li
                       key={f.id}
                       className="flex items-center justify-between gap-3 px-4 py-3"
@@ -267,11 +270,7 @@ export default async function AccountPage() {
                         <span className="tabular text-sm font-semibold">
                           {formatCurrency(f.amount)}
                         </span>
-                        {f.paid ? (
-                          <Badge tone="success">Paid</Badge>
-                        ) : (
-                          <PayFineButton fineId={f.id} />
-                        )}
+                        <PayFineButton fineId={f.id} />
                       </div>
                     </li>
                   ))}
@@ -283,6 +282,50 @@ export default async function AccountPage() {
                 Test mode: pay with card 4111 1111 1111 1111, any future expiry
                 and CVV, or UPI id success@razorpay.
               </p>
+            )}
+          </section>
+
+          <section>
+            <SectionTitle icon={<Receipt className="size-5" />}>
+              Payment history
+            </SectionTitle>
+            {paidFines.length === 0 ? (
+              <EmptyCard>Paid fines will show up here.</EmptyCard>
+            ) : (
+              <Card className="mt-4">
+                <ul className="divide-y divide-border">
+                  {paidFines.map((f) => (
+                    <li key={f.id} className="px-4 py-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="line-clamp-1 text-sm font-medium">
+                            {f.loan.book.title}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Paid {formatDate(f.paidAt ?? f.createdAt)}
+                            {f.paymentMethod === "DESK"
+                              ? " · At the desk"
+                              : f.paymentMethod === "RAZORPAY"
+                                ? " · Card"
+                                : ""}
+                          </p>
+                        </div>
+                        <div className="flex shrink-0 items-center gap-2">
+                          <span className="tabular text-sm font-semibold">
+                            {formatCurrency(f.amount)}
+                          </span>
+                          <Badge tone="success">Paid</Badge>
+                        </div>
+                      </div>
+                      {f.razorpayPaymentId && (
+                        <p className="mt-1 truncate text-[0.7rem] text-muted-foreground/70">
+                          Ref {f.razorpayPaymentId}
+                        </p>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </Card>
             )}
           </section>
         </aside>

@@ -79,14 +79,17 @@ model Reservation {
 }
 
 model Fine {
-  id        String   @id @default(cuid())
-  loan      Loan     @relation(fields: [loanId], references: [id], onDelete: Cascade)
-  loanId    String   @unique
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
-  amount    Int // stored in the smallest currency unit (paise)
-  paid      Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id                String    @id @default(cuid())
+  loan              Loan      @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  loanId            String    @unique
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId            String
+  amount            Int // stored in the smallest currency unit (paise)
+  paid              Boolean   @default(false)
+  paidAt            DateTime?
+  paymentMethod     String? // RAZORPAY | DESK
+  razorpayPaymentId String?
+  createdAt         DateTime  @default(now())
 
   @@index([userId])
 }

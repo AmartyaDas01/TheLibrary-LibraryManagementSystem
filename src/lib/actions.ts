@@ -147,17 +147,6 @@ export async function cancelReservationAction(
   revalidatePath("/account");
 }
 
-export async function payFineAction(formData: FormData): Promise<void> {
-  const user = await getCurrentUser();
-  if (!user) redirect("/login");
-  const id = String(formData.get("fineId") ?? "");
-  await prisma.fine.updateMany({
-    where: { id, userId: user.id },
-    data: { paid: true },
-  });
-  revalidatePath("/account");
-}
-
 export type FineOrder =
   | { status: "settled" }
   | {
@@ -187,7 +176,10 @@ export async function createFineOrder(fineId: string): Promise<FineOrder> {
   if (!fine) return { status: "error", message: "Fine not found." };
 
   if (!isRazorpayConfigured()) {
-    await prisma.fine.update({ where: { id: fine.id }, data: { paid: true } });
+    await prisma.fine.update({
+      where: { id: fine.id },
+      data: { paid: true, paidAt: new Date(), paymentMethod: "RAZORPAY" },
+    });
     revalidatePath("/account");
     return { status: "settled" };
   }
@@ -224,7 +216,12 @@ export async function settleFinePayment(input: {
   }
   await prisma.fine.updateMany({
     where: { id: input.fineId, userId: user.id },
-    data: { paid: true },
+    data: {
+      paid: true,
+      paidAt: new Date(),
+      paymentMethod: "RAZORPAY",
+      razorpayPaymentId: input.paymentId,
+    },
   });
   revalidatePath("/account");
   return { ok: true };
@@ -325,7 +322,10 @@ export async function returnLoanAction(formData: FormData): Promise<void> {
 export async function markFinePaidAction(formData: FormData): Promise<void> {
   await requireLibrarian();
   const id = String(formData.get("fineId") ?? "");
-  await prisma.fine.update({ where: { id }, data: { paid: true } });
+  await prisma.fine.update({
+    where: { id },
+    data: { paid: true, paidAt: new Date(), paymentMethod: "DESK" },
+  });
   revalidatePath("/admin/circulation");
   revalidatePath("/admin/members");
 }
