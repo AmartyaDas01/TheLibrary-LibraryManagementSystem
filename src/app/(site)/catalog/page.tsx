@@ -139,26 +139,32 @@ export default async function CatalogPage({
               href={`/catalog/${book.id}`}
               className="group focus-visible:outline-none"
             >
-              <div className="relative transition-transform duration-200 group-hover:-translate-y-1 group-focus-visible:-translate-y-1">
+              <div className="transition-transform duration-200 group-hover:-translate-y-1 group-focus-visible:-translate-y-1">
                 <BookCover
                   title={book.title}
                   author={book.author}
                   hue={book.coverHue}
                 />
-                <div className="absolute left-2 top-2">
-                  {book.availableCopies > 0 ? (
-                    <Badge tone="success">Available</Badge>
-                  ) : (
-                    <Badge tone="warning">On loan</Badge>
-                  )}
-                </div>
               </div>
-              <p className="mt-2.5 line-clamp-2 text-sm font-medium leading-snug group-hover:text-primary">
-                {book.title}
-              </p>
-              <p className="line-clamp-1 text-xs text-muted-foreground">
-                {book.author}
-              </p>
+              <div className="mt-2.5 flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="line-clamp-2 text-sm font-medium leading-snug group-hover:text-primary">
+                    {book.title}
+                  </p>
+                  <p className="line-clamp-1 text-xs text-muted-foreground">
+                    {book.author}
+                  </p>
+                </div>
+                {book.availableCopies > 0 ? (
+                  <Badge tone="success" className="shrink-0">
+                    Available
+                  </Badge>
+                ) : (
+                  <Badge tone="warning" className="shrink-0">
+                    On loan
+                  </Badge>
+                )}
+              </div>
             </Link>
           ))}
         </div>
