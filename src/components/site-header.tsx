@@ -3,15 +3,22 @@ import { Library } from "lucide-react";
 import { getCurrentUser, isLibrarian } from "@/lib/auth";
 import { logoutAction } from "@/lib/actions";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { MobileNav } from "@/components/mobile-nav";
 import { Button } from "@/components/ui/button";
 import { initials } from "@/lib/utils";
 
 export async function SiteHeader() {
   const user = await getCurrentUser();
 
+  const links = [
+    { href: "/catalog", label: "Catalogue" },
+    ...(user ? [{ href: "/account", label: "My shelf" }] : []),
+    ...(isLibrarian(user) ? [{ href: "/admin", label: "Staff desk" }] : []),
+  ];
+
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 sm:px-6">
+      <div className="relative mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 sm:px-6">
         <Link href="/" className="flex items-center gap-2.5">
           <span className="grid size-9 place-items-center rounded bg-primary text-on-primary">
             <Library className="size-5" />
@@ -28,6 +35,7 @@ export async function SiteHeader() {
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
+          <MobileNav links={links} />
           <ThemeToggle />
           {user ? (
             <div className="flex items-center gap-2">
