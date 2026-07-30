@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Library } from "lucide-react";
+import { Library, LogOut } from "lucide-react";
 import { getCurrentUser, isLibrarian } from "@/lib/auth";
 import { logoutAction } from "@/lib/actions";
 import { AdminNav } from "@/components/admin/admin-nav";
@@ -43,7 +43,19 @@ export default async function AdminLayout({
                 Staff desk
               </span>
             </Link>
-            <ThemeToggle />
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <form action={logoutAction}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  type="submit"
+                  aria-label="Sign out"
+                >
+                  <LogOut className="size-4.5" />
+                </Button>
+              </form>
+            </div>
           </div>
 
           <div className="mt-4 lg:mt-0">
