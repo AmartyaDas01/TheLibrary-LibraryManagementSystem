@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { registerAction, type FormState } from "@/lib/actions";
 import { Field, Input } from "@/components/ui/field";
+import { PasswordInput } from "@/components/ui/password-input";
 import { SubmitButton } from "@/components/submit-button";
 
 const initial: FormState = {};
@@ -10,6 +11,12 @@ const initial: FormState = {};
 export function RegisterForm() {
   const [state, formAction] = useActionState(registerAction, initial);
   const fe = state.fieldErrors ?? {};
+
+  useEffect(() => {
+    const firstInvalidId = Object.keys(fe)[0];
+    if (firstInvalidId) document.getElementById(firstInvalidId)?.focus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
 
   return (
     <form action={formAction} className="space-y-4" noValidate>
@@ -43,10 +50,9 @@ export function RegisterForm() {
         error={fe.password}
         hint="At least 8 characters."
       >
-        <Input
+        <PasswordInput
           id="password"
           name="password"
-          type="password"
           autoComplete="new-password"
           required
           placeholder="••••••••"

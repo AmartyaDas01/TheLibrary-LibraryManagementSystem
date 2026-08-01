@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { AlertCircle } from "lucide-react";
 import {
   createBookAction,
@@ -44,6 +44,12 @@ export function BookForm({ initial }: { initial?: Partial<BookValues> }) {
   const action = isEdit ? updateBookAction : createBookAction;
   const [state, formAction] = useActionState<FormState, FormData>(action, {});
   const fe = state.fieldErrors ?? {};
+
+  useEffect(() => {
+    const firstInvalidId = Object.keys(fe)[0];
+    if (firstInvalidId) document.getElementById(firstInvalidId)?.focus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
 
   const start = { ...empty, ...initial };
   const [title, setTitle] = useState(start.title);

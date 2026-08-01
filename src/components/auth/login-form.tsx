@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { AlertCircle } from "lucide-react";
 import { loginAction, type FormState } from "@/lib/actions";
 import { Field, Input } from "@/components/ui/field";
+import { PasswordInput } from "@/components/ui/password-input";
 import { SubmitButton } from "@/components/submit-button";
 
 const initial: FormState = {};
@@ -35,10 +36,9 @@ export function LoginForm() {
       </Field>
 
       <Field label="Password" htmlFor="password">
-        <Input
+        <PasswordInput
           id="password"
           name="password"
-          type="password"
           autoComplete="current-password"
           required
           placeholder="••••••••"

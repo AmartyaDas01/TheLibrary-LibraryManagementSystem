@@ -1,3 +1,4 @@
+import { cloneElement, isValidElement } from "react";
 import { cn } from "@/lib/utils";
 
 const inputBase =
@@ -66,21 +67,29 @@ export function Field({
   error?: string;
   children: React.ReactNode;
 }) {
+  const descriptionId = error || hint ? `${htmlFor}-description` : undefined;
+  const field = isValidElement<{ "aria-describedby"?: string }>(children)
+    ? cloneElement(children, { "aria-describedby": descriptionId })
+    : children;
+
   return (
     <div>
       <Label htmlFor={htmlFor} required={required}>
         {label}
       </Label>
-      {children}
+      {field}
       {error ? (
         <p
+          id={descriptionId}
           className="mt-1.5 text-xs font-medium text-destructive"
           role="alert"
         >
           {error}
         </p>
       ) : hint ? (
-        <p className="mt-1.5 text-xs text-muted-foreground">{hint}</p>
+        <p id={descriptionId} className="mt-1.5 text-xs text-muted-foreground">
+          {hint}
+        </p>
       ) : null}
     </div>
   );
