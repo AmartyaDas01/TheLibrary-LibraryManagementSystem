@@ -1,13 +1,13 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Pencil, Plus, Trash2, CheckCircle2 } from "lucide-react";
+import { Pencil, Plus, CheckCircle2 } from "lucide-react";
 import { getBooks } from "@/lib/data";
 import { deleteBookAction } from "@/lib/actions";
 import { BookCover } from "@/components/book-cover";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { SubmitButton } from "@/components/submit-button";
+import { ConfirmDeleteButton } from "@/components/ui/confirm-delete-button";
 
 export const metadata: Metadata = { title: "Catalogue · Staff" };
 
@@ -105,23 +105,14 @@ export default async function AdminBooksPage({
                             <Pencil /> Edit
                           </Link>
                         </Button>
-                        <form action={deleteBookAction}>
-                          <input type="hidden" name="id" value={book.id} />
-                          <SubmitButton
-                            variant="ghost"
-                            size="sm"
-                            pendingText="…"
-                            className="text-destructive hover:bg-destructive/10"
-                            title={
-                              onLoan > 0
-                                ? "Can't delete while copies are on loan"
-                                : "Delete book"
-                            }
-                            disabled={onLoan > 0}
-                          >
-                            <Trash2 />
-                          </SubmitButton>
-                        </form>
+                        <ConfirmDeleteButton
+                          action={deleteBookAction}
+                          hiddenName="id"
+                          hiddenValue={book.id}
+                          itemLabel={book.title}
+                          disabled={onLoan > 0}
+                          disabledReason="Can't delete while copies are on loan"
+                        />
                       </div>
                     </td>
                   </tr>

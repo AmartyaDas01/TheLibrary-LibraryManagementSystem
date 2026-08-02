@@ -29,6 +29,7 @@ export interface ButtonProps
   variant?: Variant;
   size?: Size;
   asChild?: boolean;
+  ref?: React.Ref<HTMLButtonElement>;
 }
 
 export function Button({
@@ -37,6 +38,7 @@ export function Button({
   size = "md",
   asChild = false,
   children,
+  ref,
   ...props
 }: ButtonProps) {
   const classes = cn(base, variants[variant], sizes[size], className);
@@ -52,7 +54,7 @@ export function Button({
   }
 
   return (
-    <button className={classes} {...props}>
+    <button ref={ref} className={classes} {...props}>
       {children}
     </button>
   );
